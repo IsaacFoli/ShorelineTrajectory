@@ -1,0 +1,54 @@
+import numpy as np
+from scipy.interpolate import UnivariateSpline
+from matplotlib.ticker import AutoMinorLocator
+
+import matplotlib.pyplot as plt
+data = np.loadtxt('File_Location.txt') 
+
+plt.figure(figsize=(5,20))
+plt.xlabel('Cumulative Shoreline Trajectory', fontsize=12)
+plt.ylabel('Depth [ft]', fontsize=12,)
+
+ax = plt.axes()
+ax.yaxis.grid()
+
+ymin=min(data[:,0])
+ymax=max(data[:,0])
+xmin=min(data[:,1])
+xmax=max(data[:,1])
+
+
+ax.xaxis.set_label_position('top')
+ax.xaxis.tick_top()
+plt.minorticks_on()
+ax.yaxis.set_minor_locator(AutoMinorLocator(10))
+plt.xticks(rotation=45)
+params={'length': 7}
+axis = plt.axes().xaxis
+axis.set_tick_params(which='major', **params)
+
+plt.ylim(ymax,ymin) 
+
+#AVERAGING OF POINTS
+n = 3 #every how many points u wish to avg
+
+dummy_array = data[:,1]
+new_vector = []  #vector of average data points, your new x
+ref = n
+
+for i in np.arange(len(data[:,1])//n):
+    new_vector.append(dummy_array[i*n:ref].mean())
+    ref = ref + n
+
+aux=data[:,0] #another dummy array
+y=aux[0::3] #takes one depth value every 3
+
+#Smoothing
+spl = UnivariateSpline(y,new_vector)
+ys = np.linspace(ymin, ymax, 10000)
+spl.set_smoothing_factor(0.05)
+
+#plt.plot(new_vector,y,'go') #averaged points
+plt.plot(spl(ys),ys,'g-') #smoothed line
+
+plt.show(
